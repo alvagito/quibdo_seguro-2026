@@ -1,0 +1,88 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\geometry{a4paper, margin=2.5cm}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{courier}
+\lstset{basicstyle=\ttfamily\small,breaklines=true}
+
+\begin{document}
+\title{Manual Técnico - Quibdó Seguro}
+\author{Equipo de Desarrollo}
+\date{2026}
+\maketitle
+
+\section{Arquitectura}
+La aplicación está organizada como una UI monolítica (Laravel) y varios microservicios:
+\begin{itemize}
+  \item Auth Service (puerto 8001)
+  \item Incident Service (8002)
+  \item Rewards Service (8003)
+  \item Notification Service (8004)
+  \item Analytics Service (8005)
+  \item API Gateway (8000)
+\end{itemize}
+
+\section{Variables de entorno críticas}
+\begin{itemize}
+  \item `GATEWAY_URL`
+  \item `MONGODB_URI`, `DB_DATABASE`
+  \item `SESSION_DRIVER`, `LOG_CHANNEL`
+  \item `SANCTUM` y modelo `personal_access_token_model` en `auth-service`
+\end{itemize}
+
+\section{Endpoints importantes}
+\begin{lstlisting}
+POST /auth/register    (gateway -> auth-service)
+POST /auth/login
+GET  /auth/profile
+POST /auth/logout
+POST /incidentes
+GET  /stats
+\end{lstlisting}
+
+\section{Docker Compose (ejemplo desarrollo)}
+Archivo `docker-compose.dev.yml` (ejemplo mínimo):
+\begin{lstlisting}
+version: '3.8'
+services:
+  mongo:
+    image: mongo:6
+    ports: ["27017:27017"]
+    volumes:
+      - mongo-data:/data/db
+
+  gateway:
+    build: ./microservices/gateway
+    ports: ["8000:8000"]
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/quibdo_seguro
+
+  auth-service:
+    build: ./microservices/auth-service
+    ports: ["8001:8001"]
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/quibdo_seguro
+
+volumes:
+  mongo-data:
+
+\end{lstlisting}
+
+\section{Hosting gratuito sugerido}
+\begin{itemize}
+  \item Documentación estática (PDF / Markdown): GitHub Pages o Netlify (gratis)
+  \item Aplicación completa: Render / Railway (planes gratuitos limitados) o Heroku (si disponible)
+  \item Para pruebas, usar `docker-compose` + Cloudflare Tunnel para exponer localmente en un dominio temporal
+\end{itemize}
+
+\section{Accesibilidad y diseño}
+Usar variables CSS con contraste adecuado. Tipografías y tamaños legibles para usuarios mayores.
+
+\section{Pruebas recomendadas}
+Unit tests (PHPUnit), pruebas E2E (cypress o Dusk), contract tests OpenAPI.
+
+\end{document}

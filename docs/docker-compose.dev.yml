@@ -1,0 +1,39 @@
+version: '3.8'
+services:
+  mongo:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  gateway:
+    build: ./microservices/gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/quibdo_seguro
+
+  auth-service:
+    build: ./microservices/auth-service
+    ports:
+      - "8001:8001"
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/quibdo_seguro
+
+  incident-service:
+    build: ./microservices/incident-service
+    ports:
+      - "8002:8002"
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/quibdo_seguro
+
+  rewards-service:
+    build: ./microservices/rewards-service
+    ports:
+      - "8003:8003"
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/quibdo_seguro
+
+volumes:
+  mongo-data:

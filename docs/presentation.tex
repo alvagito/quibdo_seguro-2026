@@ -1,0 +1,58 @@
+\documentclass[11pt]{beamer}
+\usetheme{Madrid}
+\usecolortheme{seahorse}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+
+\title{Quibdó Seguro}
+\subtitle{Plataforma de reportes ciudadanos y recompensas}
+\author{Equipo de Desarrollo}
+\date{2026}
+
+\begin{document}
+\frame{\titlepage}
+
+\begin{frame}{Resumen}
+\begin{itemize}
+  \item Monolito UI (Laravel) + Microservicios
+  \item Base de datos: MongoDB
+  \item Objetivo: facilitar reportes ciudadanos y gestionar recompensas
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Microservicios}
+\begin{itemize}
+  \item Auth Service (tokens, usuarios)
+  \item Incident Service (reportes)
+  \item Rewards Service (ofertas y canjes)
+  \item Notification Service (notificaciones)
+  \item Analytics Service (métricas)
+  \item API Gateway (8000)
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Despliegue}
+\begin{itemize}
+  \item Desarrollo: `docker-compose` con MongoDB y servicios
+  \item Producción: Kubernetes / PaaS
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Accesibilidad y UX}
+\begin{itemize}
+  \item Colores agradables y legibles
+  \item Diseño responsivo (móvil y escritorio)
+  \item Manual de usuario para públicos mayores (incluido)
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Siguientes pasos}
+\begin{itemize}
+  \item Compilar y generar PDFs
+  \item Preparar hosting gratuito y guía paso a paso
+  \item Entrega final: PDFs + repositorio funcionando
+\end{itemize}
+\end{frame}
+
+\end{document}
