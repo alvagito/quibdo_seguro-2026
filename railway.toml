@@ -1,11 +1,8 @@
-```toml id="k5p2mx"
+```toml id="x4n8pc"
 [build]
-builder = "NIXPACKS"
+builder = "DOCKERFILE"
 
 [deploy]
-startCommand = "php artisan serve --host=0.0.0.0 --port=$PORT"
+startCommand = "php artisan serve --host=0.0.0.0 --port=8080"
 restartPolicyType = "ON_FAILURE"
-
-[variables]
-NIXPACKS_PHP_VERSION = "8.2"
 ```
