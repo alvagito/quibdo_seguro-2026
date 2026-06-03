@@ -43,7 +43,7 @@ class AuthController extends Controller
 
         // Delegar al microservicio vía Gateway
         try {
-            $response = Http::timeout(10)->post(config('services.gateway.url') . '/auth/login', $request->all());
+            $response = Http::timeout(10)->post(config('services.gateway.url') . '/api/auth/login', $request->all());
         } catch (Throwable $exception) {
             return $this->gatewayUnavailable($request);
         }
@@ -63,7 +63,7 @@ class AuthController extends Controller
                 Auth::login($user);
             }
 
-            $redirect = redirect()->intended('/dashboard');
+            $redirect = $this->redirectToRoleDashboard($user);
 
             if ($token) {
                 return $redirect->withCookie(cookie('quibdo_token', $token, 60 * 24 * 30));
@@ -86,7 +86,7 @@ class AuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'nombre' => 'required|string|max:255',
-            'email' => 'required|email|unique:usuarios,email',
+            'email' => 'required|email|unique:users,email',
             'password' => 'required|min:6|confirmed',
         ]);
 
@@ -100,7 +100,7 @@ class AuthController extends Controller
 
         // Delegar al microservicio vía Gateway
         try {
-            $response = Http::timeout(10)->post(config('services.gateway.url') . '/auth/register', $request->all());
+            $response = Http::timeout(10)->post(config('services.gateway.url') . '/api/auth/register', $request->all());
         } catch (Throwable $exception) {
             return $this->gatewayUnavailable($request);
         }
@@ -119,7 +119,7 @@ class AuthController extends Controller
                 Auth::login($user);
             }
 
-            $redirect = redirect('/dashboard');
+            $redirect = $this->redirectToRoleDashboard($user);
 
             if ($token) {
                 return $redirect->withCookie(cookie('quibdo_token', $token, 60 * 24 * 30));
@@ -151,7 +151,7 @@ class AuthController extends Controller
         }
 
         try {
-            $response = Http::timeout(10)->withToken($token)->post(config('services.gateway.url') . '/auth/logout');
+            $response = Http::timeout(10)->withToken($token)->post(config('services.gateway.url') . '/api/auth/logout');
         } catch (Throwable $exception) {
             $response = null;
         }
@@ -168,6 +168,18 @@ class AuthController extends Controller
         }
 
         return redirect('/')->withCookie($forgetCookie)->with('success', 'Sesión cerrada correctamente.');
+    }
+
+    private function redirectToRoleDashboard(?User $user)
+    {
+        $role = $user?->rol;
+
+        return match ($role) {
+            'admin' => redirect('/admin'),
+            'comercio' => redirect('/comercio'),
+            'autoridad' => redirect('/autoridad'),
+            default => redirect('/dashboard'),
+        };
     }
 
     private function gatewayUnavailable(Request $request)

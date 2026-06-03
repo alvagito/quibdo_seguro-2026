@@ -61,7 +61,7 @@ class AdminController extends Controller
 
         $request->validate([
             'nombre' => 'required|string|max:255',
-            'email' => 'required|email|unique:usuarios,email,' . $id . ',_id',
+            'email' => 'required|email|unique:users,email,' . $id . ',_id',
             'rol' => 'required|in:normal,admin,autoridad,comercio',
             'puntos' => 'required|integer|min:0',
         ]);

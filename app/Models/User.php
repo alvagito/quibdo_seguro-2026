@@ -10,7 +10,7 @@ class User extends Authenticatable
     use Notifiable;
 
     protected $connection = 'mongodb';
-    protected $collection = 'usuarios';
+    protected $collection = 'users';
     
     protected $fillable = [
         'nombre',

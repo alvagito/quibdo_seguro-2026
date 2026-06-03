@@ -15,6 +15,15 @@ class DashboardController extends Controller
     public function index()
     {
         $usuario = Auth::user();
+
+        if ($usuario && in_array($usuario->rol, ['admin', 'comercio', 'autoridad'])) {
+            return match ($usuario->rol) {
+                'admin' => redirect('/admin'),
+                'comercio' => redirect('/comercio'),
+                'autoridad' => redirect('/autoridad'),
+                default => redirect('/dashboard'),
+            };
+        }
         
         // Obtener incidentes recientes (últimos 20)
         $incidentes = Incidente::with('usuario')
