@@ -5,9 +5,13 @@
 
 COMMAND=${1:-status}
 SERVICE=${2:-all}
+<<<<<<< HEAD
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOGS_DIR="/tmp/quibdo-services"
 PIDS_DIR="$LOGS_DIR/pids"
+=======
+LOGS_DIR="/tmp/quibdo-services"
+>>>>>>> be697654fc0247a103416ed6dfb496bddd7db489
 
 # Colores
 RED='\033[0;31m'
@@ -19,11 +23,16 @@ NC='\033[0m'
 case "$COMMAND" in
     start)
         echo -e "${BLUE}Iniciando servicios...${NC}"
+<<<<<<< HEAD
         bash "$ROOT_DIR/start-services.sh"
+=======
+        bash start-services.sh
+>>>>>>> be697654fc0247a103416ed6dfb496bddd7db489
         ;;
     
     stop)
         echo -e "${YELLOW}Deteniendo servicios...${NC}"
+<<<<<<< HEAD
         if [ ! -d "$PIDS_DIR" ] || ! ls "$PIDS_DIR"/*.pid >/dev/null 2>&1; then
             echo -e "${RED}No hay PIDs registrados en $PIDS_DIR${NC}"
             exit 0
@@ -42,18 +51,28 @@ case "$COMMAND" in
 
             rm -f "$pid_file"
         done
+=======
+        killall php 2>/dev/null && echo -e "${GREEN}✅ Servicios detenidos${NC}" || echo -e "${RED}No hay servicios corriendo${NC}"
+>>>>>>> be697654fc0247a103416ed6dfb496bddd7db489
         ;;
     
     restart)
         echo -e "${YELLOW}Reiniciando servicios...${NC}"
+<<<<<<< HEAD
         bash "$ROOT_DIR/manage-services.sh" stop
         sleep 1
         bash "$ROOT_DIR/start-services.sh"
+=======
+        killall php 2>/dev/null
+        sleep 1
+        bash start-services.sh
+>>>>>>> be697654fc0247a103416ed6dfb496bddd7db489
         ;;
     
     status)
         echo -e "${BLUE}Estado de servicios:${NC}"
         echo ""
+<<<<<<< HEAD
         if [ -d "$PIDS_DIR" ] && ls "$PIDS_DIR"/*.pid >/dev/null 2>&1; then
             for pid_file in "$PIDS_DIR"/*.pid; do
                 pid=$(cat "$pid_file")
@@ -68,6 +87,9 @@ case "$COMMAND" in
         else
             echo -e "${RED}No hay servicios registrados${NC}"
         fi
+=======
+        pgrep -l "php" | grep -E "artisan|serve" || echo -e "${RED}No hay servicios corriendo${NC}"
+>>>>>>> be697654fc0247a103416ed6dfb496bddd7db489
         echo ""
         echo "MongoDB:"
         pgrep -l "mongod" || echo -e "${RED}MongoDB no está corriendo${NC}"

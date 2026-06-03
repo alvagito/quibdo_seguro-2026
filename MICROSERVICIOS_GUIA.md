@@ -6,8 +6,12 @@ Tu proyecto ya está totalmente configurado con una **arquitectura de microservi
 
 | Servicio | Puerto | Descripción |
 |----------|--------|-------------|
+<<<<<<< HEAD
 | **Web Client** | 8006 | Interfaz web Laravel Blade |
 | **Gateway** | 8000 | Punto de entrada API, enruta solicitudes a otros servicios |
+=======
+| **Gateway** | 8000 | Punto de entrada, enruta solicitudes a otros servicios |
+>>>>>>> be697654fc0247a103416ed6dfb496bddd7db489
 | **Auth Service** | 8001 | Autenticación, usuarios, puntos |
 | **Incident Service** | 8002 | Gestión de reportes/incidentes |
 | **Rewards Service** | 8003 | Recompensas y canjes |
@@ -40,9 +44,12 @@ Tu proyecto ya está totalmente configurado con una **arquitectura de microservi
    
    # O ejecutar MongoDB en Docker
    docker run -d -p 27017:27017 mongo
+<<<<<<< HEAD
 
    # O con Docker Compose desde la raiz del proyecto
    docker compose up -d mongodb
+=======
+>>>>>>> be697654fc0247a103416ed6dfb496bddd7db489
    ```
 
 ## 🎯 Cómo Levantar los Servicios
@@ -61,11 +68,17 @@ bash start-services.sh
 
 El script hará automáticamente:
 - ✅ Verificar MongoDB
+<<<<<<< HEAD
 - ✅ Levantar el cliente web y cada microservicio en su puerto
+=======
+- ✅ Ejecutar migraciones en cada servicio
+- ✅ Levantar cada servicio en su puerto
+>>>>>>> be697654fc0247a103416ed6dfb496bddd7db489
 - ✅ Crear logs en `/tmp/quibdo-services/`
 
 ### Opción 2: Manual (Uno por uno)
 
+<<<<<<< HEAD
 Abre **7 terminales diferentes** y ejecuta en cada una:
 
 **Terminal 1 - Web Client (Puerto 8006):**
@@ -75,36 +88,61 @@ php artisan serve --host=127.0.0.1 --port=8006
 ```
 
 **Terminal 2 - Auth Service (Puerto 8001):**
+=======
+Abre **5 terminales diferentes** y ejecuta en cada una:
+
+**Terminal 1 - Auth Service (Puerto 8001):**
+>>>>>>> be697654fc0247a103416ed6dfb496bddd7db489
 ```bash
 cd /home/alvaro/Descargas/quibdo_seguro/microservices/auth-service
 php artisan serve --port=8001
 ```
 
+<<<<<<< HEAD
 **Terminal 3 - Incident Service (Puerto 8002):**
+=======
+**Terminal 2 - Incident Service (Puerto 8002):**
+>>>>>>> be697654fc0247a103416ed6dfb496bddd7db489
 ```bash
 cd /home/alvaro/Descargas/quibdo_seguro/microservices/incident-service
 php artisan serve --port=8002
 ```
 
+<<<<<<< HEAD
 **Terminal 4 - Rewards Service (Puerto 8003):**
+=======
+**Terminal 3 - Rewards Service (Puerto 8003):**
+>>>>>>> be697654fc0247a103416ed6dfb496bddd7db489
 ```bash
 cd /home/alvaro/Descargas/quibdo_seguro/microservices/rewards-service
 php artisan serve --port=8003
 ```
 
+<<<<<<< HEAD
 **Terminal 5 - Notification Service (Puerto 8004):**
+=======
+**Terminal 4 - Notification Service (Puerto 8004):**
+>>>>>>> be697654fc0247a103416ed6dfb496bddd7db489
 ```bash
 cd /home/alvaro/Descargas/quibdo_seguro/microservices/notification-service
 php artisan serve --port=8004
 ```
 
+<<<<<<< HEAD
 **Terminal 6 - Analytics Service (Puerto 8005):**
+=======
+**Terminal 5 - Analytics Service (Puerto 8005):**
+>>>>>>> be697654fc0247a103416ed6dfb496bddd7db489
 ```bash
 cd /home/alvaro/Descargas/quibdo_seguro/microservices/analytics-service
 php artisan serve --port=8005
 ```
 
+<<<<<<< HEAD
 **Terminal 7 - Gateway (Puerto 8000):**
+=======
+**Terminal 6 - Gateway (Puerto 8000):**
+>>>>>>> be697654fc0247a103416ed6dfb496bddd7db489
 ```bash
 cd /home/alvaro/Descargas/quibdo_seguro/microservices/gateway
 php artisan serve --port=8000
@@ -137,7 +175,11 @@ bash manage-services.sh logs incident-service
 
 ### 1. Registrar un usuario
 ```bash
+<<<<<<< HEAD
 curl -X POST http://localhost:8000/api/auth/register \
+=======
+curl -X POST http://localhost:8000/auth/register \
+>>>>>>> be697654fc0247a103416ed6dfb496bddd7db489
   -H "Content-Type: application/json" \
   -d '{
     "nombre": "Test User",
@@ -148,7 +190,11 @@ curl -X POST http://localhost:8000/api/auth/register \
 
 ### 2. Login
 ```bash
+<<<<<<< HEAD
 curl -X POST http://localhost:8000/api/auth/login \
+=======
+curl -X POST http://localhost:8000/auth/login \
+>>>>>>> be697654fc0247a103416ed6dfb496bddd7db489
   -H "Content-Type: application/json" \
   -d '{
     "email": "test@example.com",
@@ -156,16 +202,25 @@ curl -X POST http://localhost:8000/api/auth/login \
   }'
 ```
 
+<<<<<<< HEAD
 Copiar el token del campo `data.token` para usar en las siguientes peticiones.
 
 ### 3. Obtener perfil
 ```bash
 curl -X GET http://localhost:8000/api/auth/profile \
+=======
+Copiar el token del response `access_token` para usar en las siguientes peticiones.
+
+### 3. Obtener perfil
+```bash
+curl -X GET http://localhost:8000/auth/profile \
+>>>>>>> be697654fc0247a103416ed6dfb496bddd7db489
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
 
 ### 4. Crear un incidente (reporte)
 ```bash
+<<<<<<< HEAD
 curl -X POST http://localhost:8000/api/incidentes \
   -H "Authorization: Bearer YOUR_TOKEN_HERE" \
   -F "id_tipo_incidente=1" \
@@ -184,6 +239,21 @@ curl http://localhost:8000/api/health/services
 ### 6. Obtener métricas (Analytics)
 ```bash
 curl -X GET http://localhost:8000/api/stats/dashboard
+=======
+curl -X POST http://localhost:8000/incidentes \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -F "titulo=Robo en calle principal" \
+  -F "descripcion=Se reporta robo de motocicleta" \
+  -F "latitud=-2.4" \
+  -F "longitud=-76.5" \
+  -F "evidencia_foto=@/ruta/a/foto.jpg"
+```
+
+### 5. Obtener métricas (Analytics)
+```bash
+curl -X GET http://localhost:8000/stats \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+>>>>>>> be697654fc0247a103416ed6dfb496bddd7db489
 ```
 
 ## 📁 Logs
@@ -205,8 +275,13 @@ grep "ERROR" /tmp/quibdo-services/*.log
 
 ### Error: "Address already in use" (Puerto ocupado)
 ```bash
+<<<<<<< HEAD
 # Detener solo los procesos iniciados por el script
 bash manage-services.sh stop
+=======
+# Matar todos los procesos PHP
+killall php
+>>>>>>> be697654fc0247a103416ed6dfb496bddd7db489
 
 # O identificar qué está usando el puerto
 lsof -i :8000
