@@ -25,8 +25,6 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 0.75rem;
 }
 
 header a {
@@ -36,52 +34,11 @@ header a {
 
 nav ul {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
     list-style: none;
-    gap: 0.75rem;
-    margin: 0;
-    padding: 0;
 }
 
 nav ul li {
-    margin: 0;
-}
-
-nav ul li a,
-.btn-header {
-    color: white;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.55rem 0.85rem;
-    border-radius: 999px;
-    transition: background 0.2s ease, transform 0.2s ease;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-nav ul li a:hover,
-.btn-header:hover {
-    background: rgba(255, 255, 255, 0.12);
-    transform: translateY(-1px);
-}
-
-.btn-header {
-    border: none;
-    cursor: pointer;
-    background: rgba(255, 255, 255, 0.08);
-}
-
-@media (max-width: 768px) {
-    header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    nav ul {
-        width: 100%;
-    }
+    margin-left: 1rem;
 }
 
 .funciona{
