@@ -1,8 +1,7 @@
-```toml id="x4n8pc"
+
 [build]
 builder = "DOCKERFILE"
 
 [deploy]
 startCommand = "php artisan serve --host=0.0.0.0 --port=8080"
 restartPolicyType = "ON_FAILURE"
-```
