@@ -23,7 +23,9 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 
 RUN composer install --no-dev --optimize-autoloader
 
-RUN chmod -R 777 storage bootstrap/cache
+
+RUN mkdir -p storage bootstrap/cache && chmod -R 777 storage bootstrap/cache
+
 
 EXPOSE 8080
 
