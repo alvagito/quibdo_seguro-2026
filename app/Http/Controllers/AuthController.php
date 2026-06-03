@@ -59,8 +59,12 @@ class AuthController extends Controller
             $token = $body['data']['token'] ?? null;
             $user = User::where('email', $request->email)->first();
 
+         
+
             if ($user) {
                 Auth::login($user);
+                
+
             }
 
             $redirect = $this->redirectToRoleDashboard($user);
