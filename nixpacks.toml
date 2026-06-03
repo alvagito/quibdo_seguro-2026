@@ -1,6 +1,11 @@
-```toml id="r6p1zk"
+```toml id="f4p9rc"
+providers = ["php"]
+
+[variables]
+NIXPACKS_PHP_VERSION = "8.2"
+
 [phases.setup]
-nixPkgs = ["php81", "nodejs_18", "composer"]
+nixPkgs = ["php82", "nodejs_18", "composer"]
 
 [phases.install]
 cmds = [
