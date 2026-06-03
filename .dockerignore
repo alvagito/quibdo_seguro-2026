@@ -1,7 +1,6 @@
-```text id="v5p1zk"
+
 vendor
 node_modules
 .git
 storage/logs
 .env
-```
