@@ -1,0 +1,451 @@
+================================================================
+CONTEXTO COMPLETO DEL PROYECTO: QUIBDÓ SEGURO
+Para uso con ChatGPT - Documento de referencia técnica
+================================================================
+
+DESCRIPCIÓN GENERAL
+-------------------
+"Quibdó Seguro" es una plataforma web que permite a ciudadanos reportar
+incidentes de seguridad (robos, accidentes, violencia), participar en un
+sistema de puntos/recompensas, y facilita la gestión de reportes por parte
+de autoridades y administradores.
+
+STACK TECNOLÓGICO
+-----------------
+- Backend: Laravel 10.10 + PHP 8.1+
+- Base de datos: MongoDB (NoSQL) via mongodb/laravel-mongodb ^5.5
+- Frontend: HTML5, CSS3, JavaScript Vanilla
+- Mapas: Leaflet.js + OpenStreetMap
+- Iconos: Font Awesome 6
+- Build tool: Vite 5.0
+- Arquitectura: MVC (Modelo-Vista-Controlador)
+
+================================================================
+MODELOS (app/Models/)
+================================================================
+
+User.php
+  Campos: nombre, email, password, rol, puntos
+  Roles posibles: 'normal' (ciudadano), 'admin', 'autoridad', 'comercio'
+  Relaciones:
+    - hasMany(Incidente)
+    - hasMany(Oferta)
+    - hasMany(Notificacion)
+    - hasMany(Canje)
+    - hasMany(Comentario)
+
+Incidente.php
+  Campos: id_usuario, id_tipo_incidente, latitud, longitud, descripcion,
+          fecha_hora_incidente, fecha_hora_reporte, evidencia_foto_url,
+          direccion_aproximada
+  Tipos: 1=Robo, 2=Accidente, 3=Violencia, 4=Otro
+  Relaciones:
+    - belongsTo(User)
+    - hasMany(Comentario)
+
+Oferta.php
+  Campos: id_comercio, titulo, descripcion, puntos
+  Relaciones:
+    - belongsTo(User) [el comercio]
+    - hasMany(Canje)
+
+Canje.php
+  Campos: id_usuario, id_oferta, id_comercio, puntos_canjeados,
+          codigo_qr, estado, fecha_canje, fecha_validacion
+  Estados: 'pendiente', 'validado'
+  Relaciones:
+    - belongsTo(User) [usuario que canjea]
+    - belongsTo(Oferta)
+    - belongsTo(User) [comercio que valida]
+
+Recompensa.php
+  Campos: nombre, puntos
+  Uso: Recompensas especiales creadas por administradores
+
+Notificacion.php
+  Campos: id_usuario, tipo, titulo, mensaje, leida, url, datos_adicionales
+  Tipos: 'validacion_reporte', 'nuevo_reporte', 'canje'
+
+Comentario.php
+  Campos: id_incidente, id_usuario, comentario, es_autoridad
+  Relaciones:
+    - belongsTo(Incidente)
+    - belongsTo(User)
+
+================================================================
+CONTROLADORES (app/Http/Controllers/)
+================================================================
+
+AuthController.php
+  showLogin()     → Muestra formulario de login
+  login()         → Procesa credenciales, redirige según rol
+  showRegister()  → Muestra formulario de registro
+  register()      → Crea usuario con rol='normal' por defecto
+  logout()        → Cierra sesión y regenera token CSRF
+
+DashboardController.php
+  index()         → Panel principal con feed de noticias y estadísticas
+                    Datos: incidentes recientes (últimos 20), total_reportes,
+                    reportes_hoy, reportes_semana, usuarios_activos,
+                    incidentes por tipo
+
+UsuarioController.php
+  perfil()                    → Perfil del usuario
+  formReportar()              → Formulario para reportar incidente
+  mapa()                      → Mapa interactivo con filtros (tipo, periodo)
+  recompensas()               → Lista recompensas y ofertas disponibles
+  canjearRecompensa($id)      → Canjea puntos por oferta, genera código QR,
+                                resta puntos, crea registro de canje
+  misCanjes()                 → Historial de canjes del usuario
+  notificaciones()            → Lista notificaciones del usuario
+  marcarNotificacionLeida()   → Marca notificación como leída
+  guardarReporte()            → Guarda incidente, valida ubicación (radio 100m),
+                                sube foto, suma puntos, notifica autoridades
+
+AdminController.php
+  index()                     → Dashboard admin
+  usuarios()                  → Lista usuarios con búsqueda y filtro por rol
+  editUsuario($id)            → Formulario de edición de usuario
+  updateUsuario()             → Actualiza datos del usuario
+  deleteUsuario()             → Elimina usuario
+  reportes()                  → Lista reportes con búsqueda y filtros
+  deleteReporte()             → Elimina reporte
+  comercios()                 → Lista comercios con sus ofertas
+  ofertas()                   → Gestiona ofertas de comercios
+  editOferta() / updateOferta() / deleteOferta()
+  recompensas()               → Gestiona recompensas del sistema
+  storeRecompensa() / deleteRecompensa()
+
+ComercioController.php
+  index()                     → Dashboard del comercio
+  ofertas()                   → Lista ofertas del comercio
+  storeOferta()               → Crea nueva oferta
+  deleteOferta()              → Elimina oferta
+  estadisticas()              → Métricas: total_ofertas, canjeadas,
+                                puntos_redimidos, canjes_pendientes
+  validarCanje()              → Valida código QR, marca canje como 'validado',
+                                registra fecha_validacion
+
+InicioController.php
+  index()                     → Página pública con mapa, últimos 20 incidentes,
+                                últimos 5 reportes, estadísticas generales
+
+================================================================
+RUTAS (routes/web.php)
+================================================================
+
+PÚBLICAS:
+  GET  /                          → InicioController@index
+  GET  /login                     → AuthController@showLogin
+  POST /login                     → AuthController@login
+  GET  /register                  → AuthController@showRegister
+  POST /register                  → AuthController@register
+  POST /logout                    → AuthController@logout
+
+USUARIO NORMAL (middleware: auth):
+  GET  /dashboard                 → DashboardController@index
+  GET  /perfil                    → UsuarioController@perfil
+  GET  /reportar                  → UsuarioController@formReportar
+  POST /reportar                  → UsuarioController@guardarReporte
+  GET  /mapa                      → UsuarioController@mapa
+  GET  /recompensas               → UsuarioController@recompensas
+  POST /recompensas/canjear/{id}  → UsuarioController@canjearRecompensa
+  GET  /mis-canjes                → UsuarioController@misCanjes
+  GET  /notificaciones            → UsuarioController@notificaciones
+  POST /notificaciones/{id}/leer  → UsuarioController@marcarNotificacionLeida
+
+COMERCIO (middleware: auth, role:comercio):
+  GET  /comercio                          → ComercioController@index
+  GET  /comercio/ofertas                  → ComercioController@ofertas
+  POST /comercio/ofertas                  → ComercioController@storeOferta
+  DELETE /comercio/ofertas/{id}           → ComercioController@deleteOferta
+  GET  /comercio/estadisticas             → ComercioController@estadisticas
+  POST /comercio/validar-canje/{codigo}   → ComercioController@validarCanje
+  POST /comercio/validar-canje            → ComercioController@validarCanje
+
+ADMIN (middleware: auth, role:admin):
+  GET  /admin                             → AdminController@index
+  GET  /admin/usuarios                    → AdminController@usuarios
+  GET  /admin/usuarios/{id}/editar        → AdminController@editUsuario
+  PUT  /admin/usuarios/{id}               → AdminController@updateUsuario
+  DELETE /admin/usuarios/{id}             → AdminController@deleteUsuario
+  GET  /admin/reportes                    → AdminController@reportes
+  DELETE /admin/reportes/{id}             → AdminController@deleteReporte
+  GET  /admin/comercios                   → AdminController@comercios
+  GET  /admin/ofertas                     → AdminController@ofertas
+  GET  /admin/ofertas/{id}/edit           → AdminController@editOferta
+  PUT  /admin/ofertas/{id}                → AdminController@updateOferta
+  DELETE /admin/ofertas/{id}              → AdminController@deleteOferta
+  GET  /admin/recompensas                 → AdminController@recompensas
+  POST /admin/recompensas                 → AdminController@storeRecompensa
+  DELETE /admin/recompensas/{id}          → AdminController@deleteRecompensa
+
+================================================================
+BASE DE DATOS - COLECCIONES MONGODB
+================================================================
+
+Colección: usuarios
+  _id, nombre, email, password (bcrypt), rol, puntos, created_at, updated_at
+
+Colección: incidentes
+  _id, id_usuario (ref), id_tipo_incidente (1-4), latitud, longitud,
+  descripcion, fecha_hora_incidente, fecha_hora_reporte,
+  evidencia_foto_url (nullable), direccion_aproximada, created_at, updated_at
+
+Colección: ofertas
+  _id, id_comercio (ref), titulo, descripcion, puntos, created_at, updated_at
+
+Colección: canjes
+  _id, id_usuario (ref), id_oferta (ref), id_comercio (ref),
+  puntos_canjeados, codigo_qr (unique), estado ('pendiente'|'validado'),
+  fecha_canje, fecha_validacion (nullable), created_at, updated_at
+
+Colección: recompensas
+  _id, nombre, puntos, created_at, updated_at
+
+Colección: notificaciones
+  _id, id_usuario (ref), tipo, titulo, mensaje, leida (bool),
+  url (nullable), datos_adicionales (object), created_at, updated_at
+
+Colección: comentarios
+  _id, id_incidente (ref), id_usuario (ref), comentario,
+  es_autoridad (bool), created_at, updated_at
+
+Configuración de conexión:
+  driver: mongodb
+  dsn: mongodb://127.0.0.1:27017
+  database: quibdo_seguro
+
+================================================================
+VISTAS (resources/views/)
+================================================================
+
+Raíz:
+  login.blade.php           → Formulario de login
+  register.blade.php        → Formulario de registro
+  dashboard.blade.php       → Panel principal con feed de noticias
+  reportar.blade.php        → Formulario de reporte con mapa interactivo
+  mapa.blade.php            → Mapa de incidentes con filtros
+  recompensas.blade.php     → Lista de recompensas y ofertas
+  mis_canjes.blade.php      → Historial de canjes
+  notificaciones.blade.php  → Centro de notificaciones
+  perfil.blade.php          → Perfil del usuario
+  inicio.blade.php          → Página pública de inicio
+
+layouts/
+  app.blade.php             → Layout base
+
+components/
+  header.blade.php          → Navegación con menú dinámico por rol
+
+admin/
+  index.blade.php           → Dashboard admin
+  usuarios.blade.php        → Gestión de usuarios
+  edit-usuario.blade.php    → Editar usuario
+  reportes.blade.php        → Gestión de reportes
+  comercios.blade.php       → Gestión de comercios
+  ofertas.blade.php         → Gestión de ofertas
+  edit-oferta.blade.php     → Editar oferta
+  recompensas.blade.php     → Gestión de recompensas
+
+comercio/
+  index.blade.php           → Dashboard comercio
+  ofertas.blade.php         → Gestión de ofertas
+  estadisticas.blade.php    → Métricas y validación de canjes
+
+Diseño:
+  - Colores primarios: #667eea, #764ba2 (gradientes morados)
+  - Responsive / mobile-first
+  - Animaciones y transiciones suaves
+  - Leaflet.js para mapas interactivos
+
+================================================================
+SERVICIOS (app/Services/)
+================================================================
+
+NotificacionService.php
+  crear($idUsuario, $tipo, $titulo, $mensaje, $url, $datosAdicionales)
+  notificarValidacionReporte($incidente, $estado)
+    → Si validado: suma 10 puntos al usuario
+  notificarNuevoReporte($incidente)
+    → Notifica a TODAS las autoridades
+  notificarCanje($usuario, $oferta, $codigoQR)
+  marcarLeida($idNotificacion)
+  noLeidas($idUsuario)
+
+================================================================
+MIDDLEWARES (app/Http/Middleware/)
+================================================================
+
+CheckRole.php
+  → Verifica que el usuario tenga el rol requerido
+  → Si no: abort(403)
+  → Uso: Route::middleware(['auth', 'role:admin'])
+
+Authenticate.php
+  → Redirige a /login si no autenticado
+
+Otros estándar: EncryptCookies, VerifyCsrfToken, TrimStrings,
+  TrustProxies, PreventRequestsDuringMaintenance
+
+================================================================
+FLUJOS PRINCIPALES DEL SISTEMA
+================================================================
+
+1. AUTENTICACIÓN
+   Usuario → /login → Valida credenciales
+   → Redirige según rol:
+     admin     → /admin
+     comercio  → /comercio
+     normal    → /dashboard
+     autoridad → /dashboard (con vistas especiales)
+
+2. REPORTE DE INCIDENTE
+   Usuario → /reportar → Selecciona ubicación en mapa Leaflet
+   → Completa formulario → POST /reportar
+   → Valida datos → Sube foto de evidencia
+   → Crea Incidente en MongoDB
+   → Suma 10 puntos al usuario
+   → Notifica a todas las autoridades
+   → Redirect /dashboard
+
+3. CANJE DE RECOMPENSA
+   Usuario → /recompensas → Selecciona oferta
+   → POST /recompensas/canjear/{id}
+   → Valida que tenga suficientes puntos
+   → Genera código QR único
+   → Crea registro Canje (estado='pendiente')
+   → Resta puntos al usuario
+   → Notifica al usuario
+   → Muestra código QR
+
+4. VALIDACIÓN DE CANJE (por comercio)
+   Comercio → /comercio/estadisticas → Ingresa código QR
+   → POST /comercio/validar-canje
+   → Busca Canje por codigo_qr
+   → Si existe y estado='pendiente':
+     → Marca como 'validado'
+     → Registra fecha_validacion
+   → Redirect con confirmación
+
+================================================================
+SEGURIDAD
+================================================================
+
+- Contraseñas hasheadas con bcrypt
+- Sesiones con regeneración de token en login/logout
+- Middleware de autenticación en todas las rutas protegidas
+- Middleware CheckRole para autorización por rol
+- Protección CSRF en todos los formularios (VerifyCsrfToken)
+- Validación de datos en controladores (Request::validate())
+- Validación de ubicación: radio de 100m para detectar duplicados
+
+================================================================
+ASSETS PÚBLICOS (public/assets/)
+================================================================
+
+CSS:
+  dashboard.css   → Estilos del panel principal
+  pages.css       → Estilos de páginas internas
+  perfil.css      → Estilos del perfil
+  styles.css      → Estilos globales
+  theme.css       → Variables de tema y colores
+
+JS:
+  dashboard.js    → Lógica del dashboard (gráficas, feed)
+  scripts.js      → Scripts globales
+
+Imágenes:
+  quibdo-banner.jpg → Banner principal de Quibdó
+
+================================================================
+SEEDERS (database/seeders/)
+================================================================
+
+MongoDBSeeder.php
+  Crea datos iniciales:
+  - 1 usuario admin
+  - 1 usuario normal
+  - 2 comercios
+  - 3 recompensas del sistema
+  - 4 ofertas de comercios
+
+IncidentesSeeder.php
+  Crea 10 incidentes de prueba:
+  - 3 de hoy (últimas 24 horas)
+  - 3 de esta semana (2-7 días atrás)
+  - 4 más antiguos (más de 7 días)
+  - Variedad de tipos: robos, accidentes, violencia, otros
+
+================================================================
+DEPENDENCIAS PRINCIPALES
+================================================================
+
+PHP (composer.json):
+  laravel/framework: ^10.10
+  laravel/sanctum: ^3.3
+  mongodb/laravel-mongodb: ^5.5
+  mongodb/mongodb: ^2.1
+  guzzlehttp/guzzle: ^7.2
+
+Frontend (package.json):
+  vite: ^5.0.0
+  laravel-vite-plugin: ^1.0.0
+  axios: ^1.6.4
+
+================================================================
+ESTRUCTURA DE CARPETAS RESUMIDA
+================================================================
+
+quibdo-seguro/
+├── app/
+│   ├── Http/
+│   │   ├── Controllers/   (8 controladores)
+│   │   └── Middleware/    (10 middlewares)
+│   ├── Models/            (7 modelos)
+│   ├── Services/          (NotificacionService)
+│   └── Providers/
+├── config/                (15 archivos de config)
+├── database/
+│   ├── migrations/        (5 migraciones)
+│   └── seeders/           (3 seeders)
+├── public/
+│   └── assets/            (css, js, images)
+├── resources/
+│   └── views/             (~20 vistas blade)
+├── routes/
+│   └── web.php
+└── quibdo_seguro html/    (versión PHP puro alternativa)
+    ├── admin/
+    ├── autoridad/
+    ├── comercio/
+    ├── config/
+    ├── database/
+    └── includes/
+
+================================================================
+NOTAS IMPORTANTES PARA CHATGPT
+================================================================
+
+1. El proyecto tiene DOS versiones:
+   - Versión Laravel (carpeta raíz): la principal y más completa
+   - Versión PHP puro (carpeta "quibdo_seguro html/"): versión alternativa
+     con MySQL en lugar de MongoDB
+
+2. La base de datos es MongoDB, NO MySQL. Los modelos usan
+   mongodb/laravel-mongodb para las relaciones y queries.
+
+3. El sistema de puntos funciona así:
+   - Reportar incidente = +10 puntos
+   - Canjear recompensa = -N puntos (según la oferta)
+
+4. Los roles del sistema son: 'normal', 'admin', 'autoridad', 'comercio'
+   Cada rol tiene su propio panel y rutas protegidas.
+
+5. El mapa usa Leaflet.js con tiles de OpenStreetMap (gratuito, sin API key).
+
+6. Los códigos QR se generan como strings únicos (no imágenes QR reales aún).
+
+================================================================
+FIN DEL DOCUMENTO
+================================================================
